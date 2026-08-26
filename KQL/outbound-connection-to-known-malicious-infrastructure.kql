@@ -1,0 +1,31 @@
+DeviceNetworkEvents
+| where TimeGenerated >= ago(30d)
+| where RemoteUrl has_any (
+    "detectsysscanner.at",
+    "detectsysscanner.com",
+    "detectsysscanner.de",
+    "detectsysscanner.in.net",
+    "detsysscanner.com",
+    "detsysscanner.de",
+    "techsysscanner.com",
+    "techsysscanner.lol",
+    "tlcscanner.com"
+)
+or RemoteIP == "157.230.180.90"
+| project
+    TimeGenerated,
+    DeviceName,
+    DeviceId,
+    InitiatingProcessFileName,
+    InitiatingProcessCommandLine,
+    RemoteUrl,
+    RemoteIP,
+    RemotePort,
+    ActionType
+| summarize
+    PrimeiroAcesso = min(TimeGenerated),
+    UltimoAcesso = max(TimeGenerated),
+    TotalConexoes = count(),
+    URLsAcessadas = make_set(RemoteUrl)
+    by DeviceName, DeviceId, InitiatingProcessFileName
+| order by UltimoAcesso desc
